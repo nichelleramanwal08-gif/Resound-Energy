@@ -1,0 +1,403 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>ReSound Energy — Noise to Energy Converter</title>
+<style>
+/* --- Global --- */
+*{box-sizing:border-box;}
+body{
+  margin:0;
+  font-family:"Poppins",system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;
+  background:linear-gradient(180deg,#080808,#0f1226 60%);
+  color:#ffffff;
+  -webkit-font-smoothing:antialiased;
+  scroll-behavior:smooth;
+}
+
+/* --- Header / Hero --- */
+.header-wrap {
+  position:relative;
+  height:100vh;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  text-align:center;
+  padding:40px 20px;
+  overflow:hidden;
+  background: radial-gradient(circle at 10% 10%, rgba(255,180,200,0.06), transparent 10%),
+              radial-gradient(circle at 90% 80%, rgba(150,220,255,0.04), transparent 8%),
+              linear-gradient(180deg,#111 0%, #05050a 100%);
+}
+.shape { position:absolute; border-radius:50%; filter: blur(48px); opacity:0.35; animation: float 12s ease-in-out infinite; }
+.s1 { width:360px; height:360px; background: linear-gradient(135deg,#ffb7d3,#ff8aa2); top:6%; left:4%; }
+.s2 { width:420px; height:420px; background: linear-gradient(135deg,#9fe2ff,#7fbfff); bottom:6%; right:6%; }
+.s3 { width:260px; height:260px; background: linear-gradient(135deg,#d9b6ff,#b596ff); top:40%; right:20%; }
+@keyframes float { 0%{transform:translateY(0);}50%{transform:translateY(-35px);}100%{transform:translateY(0);} }
+
+h1.site-title { font-size:64px; margin:0; font-weight:900; letter-spacing:-1px; color:#fff; text-shadow:0 6px 40px rgba(255,150,190,0.12); }
+.group-name { margin-top:8px; color:#ffdfe8; font-size:28px; font-weight:700; }
+.names { margin-top:16px; font-size:18px; color:#d8eaff; opacity:0.95; }
+
+/* Explore button */
+.btn {
+  margin-top:28px; padding:14px 36px; font-size:18px; border:none; border-radius:40px;
+  background:linear-gradient(90deg,#ff9fb3,#99d7ff); color:#04121a; font-weight:800; cursor:pointer;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.6); transition: transform .25s, box-shadow .25s;
+  animation: pulse 3s infinite ease-in-out;
+}
+.btn:hover { transform: translateY(-6px) scale(1.03); box-shadow: 0 12px 50px rgba(153,215,255,0.25); }
+@keyframes pulse { 0%,100% {box-shadow: 0 0 12px #ffb3cf55;} 50% {box-shadow: 0 0 28px #9ddaffaa;} }
+
+/* --- Content area --- */
+main#content { display:none; padding: 48px 4% 120px; background: linear-gradient(180deg,#0f1226,#0b0b14); }
+
+/* Section styling */
+.section {
+  max-width:1100px; margin: 28px auto; padding: 28px; border-radius:12px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  border: 2px solid rgba(157,218,255,0.2);
+  box-shadow: 0 8px 40px rgba(0,0,0,0.6);
+  opacity:0; transform:translateY(28px);
+  animation: fadeUp 0.8s forwards ease-out;
+}
+.section h2 { font-size:28px; color:#b7e7ff; margin:0 0 10px 0; text-shadow: 0 0 8px rgba(123,200,255,0.05); }
+.section p, .section li { color:#dbeeff; line-height:1.7; font-size:16.5px; }
+.section ul { padding-left:20px; }
+
+/* Diagram wrapper */
+.diagram { display:flex; justify-content:center; margin-top:18px; }
+.diagram svg { width:100%; max-width:700px; height:auto; }
+
+/* Floating bubbles (background decorative) */
+.bubble {
+  position: fixed; bottom: -80px; width: 35px; height:35px; border-radius:50%;
+  background: radial-gradient(circle,#ffb3cf,#ff8bb2); opacity:0.55; z-index:-1; animation: rise 12s infinite ease-in;
+}
+.bubble.b2 { left:20%; width:45px; height:45px; animation-duration:16s; background: radial-gradient(circle,#9ddaff,#7dc5ff); }
+.bubble.b3 { left:70%; width:25px; height:25px; animation-duration:10s; background: radial-gradient(circle,#d5b6ff,#c19aff); }
+@keyframes rise { 0%{transform:translateY(0) scale(1);}50%{transform:translateY(-60vh) scale(1.3);}100%{transform:translateY(-100vh) scale(1);} }
+
+/* Fade in animation */
+@keyframes fadeUp { to { opacity:1; transform:translateY(0); } }
+
+/* Footer email */
+.footer-email { text-align:center; margin-top:26px; font-size:20px; color:#ffd6e1; font-weight:700; }
+
+/* Responsive */
+@media (max-width:900px){
+  h1.site-title{ font-size:40px; }
+  .section{ padding:20px; margin:16px; }
+  .diagram svg{ max-width:100%; }
+  .names{ font-size:15px; }
+  .group-name{ font-size:20px; }
+}
+</style>
+</head>
+<body>
+
+<!-- Floating bubbles -->
+<div class="bubble"></div>
+<div class="bubble b2"></div>
+<div class="bubble b3"></div>
+
+<!-- Header -->
+<div class="header-wrap">
+  <div class="shape s1"></div>
+  <div class="shape s2"></div>
+  <div class="shape s3"></div>
+
+  <h1 class="site-title">Noise to Energy Converter</h1>
+  <div class="group-name">ReSound Energy</div>
+  <div class="names">Nichelle • Tiya • Hitanshi • Kranika • Meet • Geetansh</div>
+
+  <button class="btn" id="exploreBtn">Explore the Project</button>
+</div>
+
+<!-- Main content (hidden until explore clicked) -->
+<main id="content" aria-hidden="true">
+
+  <!-- Detailed Section 1 -->
+  <section class="section" id="sec1">
+    <h2>1. Introduction</h2>
+    <p>
+      Today’s modern world — with rapid industrialization, fast technological development, and growing urban areas —
+      has made our lives more comfortable and connected. But this progress has also created new challenges: one major
+      challenge is <strong>noise pollution</strong>. Every day, millions of vehicles, factories, machines, and loudspeakers produce
+      sound far beyond safe limits.
+    </p>
+    <p>
+      This excessive sound has many harmful effects. It affects human health by increasing stress levels, causing headaches,
+      and disturbing sleep patterns. Noise pollution can reduce concentration, increase blood pressure, and over long periods
+      contribute to more serious health issues. It also disturbs wildlife and affects ecosystems by changing animal behavior
+      or masking important natural sounds.
+    </p>
+    <p>
+      Now imagine if this wasteful, harmful noise could be redirected into something useful. What if the same noise that pollutes
+      our surroundings could help power small lights or devices? That idea—turning noise into usable electrical energy—forms
+      the basis of our project: the <strong>Noise-to-Energy Converter</strong>.
+    </p>
+    <p>
+      The Noise-to-Energy Converter is an innovation that captures mechanical vibrations caused by sound and converts them
+      into electrical energy using piezoelectric materials. This approach not only creates a tiny, renewable power source
+      but also carries an important environmental and educational message: <em>pollution can become a solution.</em> Our group,
+      <strong>ReSound Energy</strong>, with members Nichelle, Tiya, Hitanshi, and Kranika (plus Meet and Geetansh supporting the model),
+      developed this prototype to demonstrate the idea at school-level exhibitions and science fairs.
+    </p>
+    <p>
+      The goal of this project is two-fold: first, to show a working model that converts ambient noise into micro-energy
+      suitable for powering LEDs or low-power sensors; second, to raise awareness about the harmful effects of noise pollution
+      and encourage sustainable, creative thinking among students and visitors.
+    </p>
+    <div class="diagram" aria-hidden="false">
+      <svg viewBox="0 0 900 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Introduction illustration">
+        <g fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="3">
+          <path d="M40 180 q40 -80 80 0 q40 80 80 0 q40 -80 80 0 q40 80 80 0" stroke="#9ddaff"/>
+          <rect x="540" y="120" width="220" height="120" rx="14" stroke="#d5b6ff" />
+          <text x="650" y="180" text-anchor="middle" fill="#d6b6ff" font-size="18">Noise-to-Energy Converter</text>
+          <rect x="780" y="140" width="80" height="80" rx="10" stroke="#ff9fb3"/>
+          <text x="820" y="185" text-anchor="middle" fill="#ffb6c1" font-size="14">Output</text>
+          <defs>
+            <marker id="arrow1" markerWidth="10" markerHeight="10" refX="6" refY="3" orient="auto">
+              <polygon points="0 0,10 3,0 6" fill="#9ddaff"/>
+            </marker>
+          </defs>
+          <line x1="360" y1="180" x2="540" y2="180" stroke="#bde8ff" stroke-width="6" marker-end="url(#arrow1)" />
+          <line x1="760" y1="180" x2="780" y2="180" stroke="#ffd6e8" stroke-width="6" marker-end="url(#arrow1)" />
+          <text x="220" y="210" fill="#ffffff" font-size="15" text-anchor="middle">Traffic, Machines, Speakers</text>
+        </g>
+      </svg>
+    </div>
+  </section>
+
+  <!-- Detailed Section 2 -->
+  <section class="section" id="sec2">
+    <h2>2. The Concept of Noise-to-Energy Conversion</h2>
+    <p>
+      Noise-to-Energy conversion is a unique scientific idea based on turning <strong>unwanted sound</strong>
+      into <strong>useful electrical power</strong>. Normally, noise is considered harmful — it disturbs humans,
+      animals, and the ecosystem. But through creativity and science, this noise can be captured and
+      transformed into a renewable micro-energy source.
+    </p>
+    <p>
+      The idea is inspired by a growing field of research known as <strong>Acoustic Energy Harvesting</strong>.
+      Acoustic means “sound,” and harvesting means “collecting.” Scientists are now experimenting with ways to collect
+      scattered sound waves present in our surroundings and convert them into tiny amounts of electrical energy.
+    </p>
+    <p>
+      This becomes especially useful in places with continuous noise, such as traffic intersections, railway stations,
+      airports, factories, markets, and public events.
+    </p>
+    <p>
+      The concept is simple but powerful:
+      <br> <strong>Sound = mechanical vibration</strong>
+      <br> <strong>Vibration = energy</strong>
+      <br> <strong>Energy = electricity</strong>
+    </p>
+    <p>
+      So instead of letting noise escape into the environment and cause harm, we can collect it through
+      a microphone or vibrating surface and pass the vibration to a <strong>piezoelectric material</strong>,
+      which converts it into electricity. Even though the generated power is small, the idea itself is
+      highly innovative and sends a strong message of sustainability.
+    </p>
+    <div class="diagram">
+      <svg viewBox="0 0 950 340" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="140" cy="170" r="80" stroke="#ffb3cf" stroke-width="6" fill="none"></circle>
+        <text x="140" y="175" text-anchor="middle" fill="#ffb3cf" font-size="20">Noise</text>
+        <line x1="240" y1="170" x2="400" y2="170" stroke="#9ddaff" stroke-width="6" marker-end="url(#arr)"></line>
+        <rect x="400" y="120" width="200" height="100" rx="20" stroke="#d6b6ff" stroke-width="6" fill="none"></rect>
+        <text x="500" y="175" text-anchor="middle" fill="#d6b6ff" font-size="18">Converter</text>
+        <line x1="600" y1="170" x2="760" y2="170" stroke="#9ddaff" stroke-width="6" marker-end="url(#arr)"></line>
+        <circle cx="820" cy="170" r="60" stroke="#a4ffde" stroke-width="6" fill="none"></circle>
+        <text x="820" y="175" text-anchor="middle" fill="#a4ffde" font-size="18">Power</text>
+        <defs>
+          <marker id="arr" markerWidth="12" markerHeight="12" refX="6" refY="3" orient="auto">
+            <polygon points="0 0, 12 3, 0 6" fill="#9ddaff"/>
+          </marker>
+        </defs>
+      </svg>
+    </div>
+  </section>
+
+  <!-- Detailed Section 3 -->
+  <section class="section" id="sec3">
+    <h2>3. Scientific Principle Behind the Project</h2>
+    <p>
+      The project is based on one of the most important laws of physics:
+      <strong>Energy can neither be created nor destroyed — it can only be transformed from one form to another.</strong>
+    </p>
+    <p>
+      Sound is a form of mechanical energy that travels through vibrations in the air. These vibrations can be captured by special materials that respond to pressure or movement.
+      When these vibrations are directed into such materials, they generate small electrical currents.
+    </p>
+    <p>
+      <strong>Piezoelectric materials</strong> are used here — substances that produce an electric charge when subjected to vibration or pressure.
+      When sound waves hit the piezoelectric plate, they cause it to vibrate, and this vibration generates a small amount of voltage.
+    </p>
+    <div class="diagram">
+        <svg viewBox="0 0 900 240">
+          <rect x="80" y="40" width="220" height="150" rx="12" stroke="#ffd6e8" stroke-width="3" fill="none"/>
+          <text x="190" y="120" text-anchor="middle" fill="#ffd6e8">Piezoelectric Effect</text>
+        </svg>
+    </div>
+  </section>
+
+  <!-- Detailed Section 4 -->
+  <section class="section" id="sec4">
+    <h2>4. Working of the Noise-to-Energy Converter</h2>
+    <p>The converter works using a simple combination of microphones, piezoelectric transducers, and a basic electrical circuit.</p>
+    <p><strong>Sound Capture:</strong> Sound waves from the environment hit a diaphragm or microphone.</p>
+    <p><strong>Vibration Generation:</strong> These waves create vibrations that travel to the piezoelectric material.</p>
+    <p><strong>Electric Output:</strong> The piezoelectric plate converts those vibrations into electrical energy.</p>
+    <p><strong>Energy Storage:</strong> The generated electricity can be stored in capacitors or batteries.</p>
+    <p><strong>Usage:</strong> This stored energy can then power small devices such as LED bulbs, micro-sensors, or display units.</p>
+  </section>
+
+  <!-- Detailed Section 5 -->
+  <section class="section" id="sec5">
+    <h2>5. Importance of the Project</h2>
+    <p>
+      This project is not just a technical experiment; it carries a strong environmental and educational message.
+      It shows that unwanted noise can be converted into useful energy and raises awareness about the negative effects of noise pollution.
+    </p>
+    <p>
+      It demonstrates the creative power of science to turn problems into solutions, motivates students to think about sustainability and renewable energy sources,
+      and offers a low-cost, eco-friendly innovation for school-level science fairs.
+    </p>
+  </section>
+
+  <!-- Detailed Section 6 -->
+  <section class="section" id="sec6">
+    <h2>6. Theory</h2>
+    <p>
+      The main principle behind this project is the piezoelectric effect.
+      When certain materials such as quartz or ceramics are pressed, vibrated, or exposed to sound, they produce a small amount of electric voltage.
+      This happens because the mechanical energy from vibrations is converted into electrical energy.
+    </p>
+  </section>
+
+  <!-- Detailed Section 7 -->
+  <section class="section" id="sec7">
+    <h2>7. Materials Used</h2>
+    <p>For building the Noise-to-Energy Converter model, we used simple and easily available items. The main parts include:</p>
+    <ul>
+      <li>Microphone to capture surrounding sounds and vibrations</li>
+      <li>Piezoelectric transducer which converts vibrations into electrical signals</li>
+      <li>Capacitor to store generated energy temporarily</li>
+      <li>LED bulb to indicate energy production</li>
+      <li>Wires and breadboard or PCB for connections</li>
+      <li>Optional: small rechargeable battery for extra storage</li>
+    </ul>
+  </section>
+
+  <!-- Detailed Section 8 -->
+  <section class="section" id="sec8">
+    <h2>8. Circuit Explanation</h2>
+    <p>
+      The circuit is simple and works in the following way:
+      Sound Source (like clapping or traffic noise) creates vibrations. These vibrations are caught by the microphone.
+      The piezoelectric transducer converts this vibration energy into small electric signals. The output current flows through an electrical circuit connected to an LED bulb or capacitor.
+      The LED glows when the generated voltage is sufficient, showing successful conversion of sound energy into electrical energy.
+    </p>
+  </section>
+
+  <!-- Detailed Section 9 -->
+  <section class="section" id="sec9">
+    <h2>9. Usage</h2>
+    <p>
+      This stored energy can then power small devices such as LED bulbs, micro-sensors, or display units. When the surrounding noise increases —
+      for example, in areas like traffic intersections, airports, or factories — the device generates more voltage. In this way, the system becomes more efficient in noisy environments.
+    </p>
+  </section>
+
+  <!-- Detailed Section 10 -->
+  <section class="section" id="sec10">
+    <h2>10. Importance & Educational Message</h2>
+    <p>
+      This project raises awareness about the negative effects of noise pollution and demonstrates the creative power of science to turn problems into solutions.
+      It motivates students to think about sustainability and renewable energy sources, and it offers a low-cost, eco-friendly innovation for school-level science fairs.
+    </p>
+  </section>
+
+  <!-- Detailed Section 11 -->
+  <section class="section" id="sec11">
+    <h2>11. Advantages</h2>
+    <ul>
+      <li>Converts unwanted noise into useful energy.</li>
+      <li>Helps reduce noise pollution and energy waste.</li>
+      <li>Works using renewable and sustainable methods.</li>
+      <li>Uses simple, low-cost components.</li>
+      <li>Can be used for educational, experimental, or real-world applications.</li>
+    </ul>
+  </section>
+
+  <!-- Detailed Section 12 -->
+  <section class="section" id="sec12">
+    <h2>12. Applications</h2>
+    <p>
+      Piezoelectric energy harvesting can be used in many real-life situations where sound or vibration is present: busy roads, railway stations, airports, factories, and stadiums.
+      In smart cities, this technology can power streetlights, small sensors, or automatic doors. It can also be used in classrooms, auditoriums, and public halls to capture sound energy from voices or music.
+    </p>
+  </section>
+
+  <!-- Detailed Section 13 -->
+  <section class="section" id="sec13">
+    <h2>13. Limitations</h2>
+    <p>
+      Although the project is innovative and eco-friendly, it has some practical limitations. The amount of energy generated is quite small — suitable only for low-power devices like LEDs or sensors.
+      It also depends on continuous sound or vibration, so energy generation stops when the sound source is removed.
+    </p>
+    <p>
+      The piezoelectric materials are delicate and may break or lose efficiency after long use.
+      For large-scale applications, the setup cost and maintenance can become expensive. Despite these challenges, research is going on to make the system more efficient and affordable.
+    </p>
+  </section>
+
+  <!-- Detailed Section 14 -->
+  <section class="section" id="sec14">
+    <h2>14. Conclusion</h2>
+    <p>
+      This project clearly shows how science and creativity can turn a problem into a solution. Normally, noise is considered harmful and useless,
+      but with the help of piezoelectric materials, we can transform it into a source of clean energy.
+    </p>
+    <p>
+      It spreads the message that “Pollution can become a Solution.” If improved and developed further, this technology could help reduce noise pollution,
+      support renewable energy systems, and lead us toward a greener, cleaner, and smarter future.
+    </p>
+  </section>
+
+  <!-- Detailed Section 15 -->
+  <section class="section" id="sec15">
+    <h2>15. THANK YOU</h2>
+    <p>
+      “Turning noise into power and pollution into solution”
+    </p>
+    <p style="margin-top:10px; font-style:italic;">Presented by ReSound Energy</p>
+  </section>
+
+  <div class="footer-email">📧 Contact Us: <a href="mailto:resoundenergy2025@gmail.com" style="color:#ffd6e1; text-decoration:none;">resoundenergy2025@gmail.com</a></div>
+
+</main>
+
+<script>
+// Show content only after Explore clicked
+const exploreBtn = document.getElementById("exploreBtn");
+const content = document.getElementById("content");
+
+if (exploreBtn && content) {
+  content.style.display = "none";
+  content.setAttribute("aria-hidden", "true");
+  exploreBtn.addEventListener("click", () => {
+    content.style.display = "block";
+    content.setAttribute("aria-hidden", "false");
+    setTimeout(() => {
+      window.scrollTo({ top: window.innerHeight - 10, behavior: "smooth" });
+    }, 200);
+  });
+}
+</script>
+
+</body>
+</html>
